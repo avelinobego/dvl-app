@@ -1,25 +1,21 @@
 package com.dvlcube.app.rest;
 
-import static com.dvlcube.app.manager.data.e.Menu.MONITORING;
-import static com.dvlcube.utils.query.MxQuery.$;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.dvlcube.app.interfaces.MenuItem;
 import com.dvlcube.utils.aspects.stats.Stat;
 import com.dvlcube.utils.aspects.stats.Stats;
 import com.dvlcube.utils.interfaces.MxService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.dvlcube.app.manager.data.e.Menu.MONITORING;
+import static com.dvlcube.utils.query.MxQuery.$;
 
 /**
  * Application performance stats.
@@ -41,7 +37,16 @@ public class StatService implements MxService {
 	 */
 	@GetMapping
 	public List<Stat> get(@RequestParam Map<String, String> params) {
-		return Stats.values();
+
+		Comparator<Stat> compTotal = (a, p ) -> a.getTotal().compareTo(p.getTotal());
+		Comparator<Stat> compAvg = (a, p ) -> a.avg().compareTo(p.avg());
+
+		return
+				Stats.values()
+						.stream()
+						.sorted(compTotal.reversed())
+						.sorted(compAvg.reversed())
+						.collect(Collectors.toList());
 	}
 
 	/**
